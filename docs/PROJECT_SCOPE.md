@@ -8,12 +8,32 @@ The project aims to provide reliable, reproducible and maintainable market intel
 
 Potential users include researchers, market analysts, charging infrastructure stakeholders and decision makers.
 
-## Objectives and planned scope
+## Core features
 
-- Analyze infrastructure by province and district, socket type (AC/DC), installed capacity, connector and technical standard.
-- Compare licensed charging network operators and market shares using documented definitions.
-- Examine infrastructure evolution and monthly new installations when appropriate historical evidence is available.
-- Present interactive analytics and dashboards and produce professional market intelligence reports.
+The project owner approved this planning classification on 2026-11-03. Core features receive first implementation priority:
+
+- EPDK-based EV charging market data collection.
+- Monthly and yearly charging station count analysis.
+- Installed charging capacity and power-class distribution.
+- Charging network operator comparison by installed power.
+- An interactive market intelligence dashboard.
+
+## Extended features
+
+These enrich the product and are not prerequisites for completing the initial core product:
+
+- Analyze infrastructure by province and district.
+- Analyze and compare AC/DC distribution, connector types and technical standards.
+- Analyze operator market shares using documented definitions.
+- Produce professional market intelligence reports.
+
+## Future improvements
+
+No specific future feature list has been approved. Ideas may be proposed separately and require explicit approval before becoming confirmed scope.
+
+## Data limitations
+
+A single current snapshot cannot establish historical monthly installation dates. Monthly new-installation analysis requires appropriate dated historical evidence or a validated collection methodology; snapshot differences are not confirmed installation dates. Source access, quality and rights remain subject to investigation; see [data sources](DATA_SOURCES.md).
 
 ## Out of scope
 
@@ -22,3 +42,5 @@ This initial documentation phase excludes application implementation, operationa
 ## Expected outputs and status
 
 The intended outputs are analytical views, comparisons and reports with documented sources and limitations. These are planned, not implemented. No application stack or architecture has been selected.
+
+The team reports a separate Google Colab API collection proof of concept that saves outputs to Google Drive. It is not integrated into this repository, independently reviewed or selected as production architecture; see [data sources](DATA_SOURCES.md).

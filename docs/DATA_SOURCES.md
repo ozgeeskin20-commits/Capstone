@@ -12,6 +12,12 @@ Three EPDK source categories are planned. None is integrated into the repository
 
 The software license does not automatically grant rights to redistribute EPDK data.
 
+For each source, investigate and record its identity, access method, available fields, retrieval timestamps, historical coverage, provenance, quality, and usage and redistribution rights. API quotas, rate limits, service availability and schema changes are investigation topics: their existence and actual limits are unverified.
+
+## External proof of concept
+
+The team reports that a teammate developed a Google Colab EPDK API data collection script whose outputs are saved to Google Drive. It exists outside this repository and is not an integrated pipeline or selected production architecture. The notebook has not been independently reviewed; endpoint, dependencies, schema, schedule, output completeness, validation and historical sufficiency are unverified. Obtain and review the notebook, samples and retrieval metadata without publishing credentials or private Drive information; see [Q-006](project-memory/OPEN_QUESTIONS.md).
+
 ## Provenance and snapshots
 
 Future collection should record the source, retrieval time, relevant coverage, transformation steps and any limitations so results can be traced and reproduced. A snapshot represents the information available at retrieval time, subject to the source's own update schedule. Repeated, consistently documented snapshots or another suitable historical source may support comparisons, but changes between snapshots require careful interpretation.

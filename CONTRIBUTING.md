@@ -4,7 +4,7 @@ Contributions should be accurate, reproducible, respectful of data and intellect
 
 ## Branches and workflow
 
-The project has exactly two branches: `main` is the stable production and release branch, and `develop` is the active development and integration branch. The repository starts without commits, so these branch references will be established after review. Do not create feature, fix or other additional branches.
+The project maintains exactly two branches: `main` is the stable production and release branch, and `develop` is the active development and integration branch. As verified on 2026-11-03, the two local branches both point to the initial documentation commit `5197b46`. This local state does not establish remote publication or synchronization. Do not create any additional temporary or permanent branches; see [REQ-007](docs/project-memory/REQUIREMENTS.md).
 
 Discuss substantive changes before implementation. Make development changes on `develop` and keep them focused. Review and approve a stable release on `develop`, then promote it from `develop` to `main` through a pull request.
 
