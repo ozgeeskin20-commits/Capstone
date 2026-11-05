@@ -1,0 +1,63 @@
+# ==============================================================================
+# Capstone Project .gitignore (Proposed Baseline)
+# Scoped for Python, Streamlit, local data isolation, and credential protection.
+# ==============================================================================
+
+# --- Secrets & Environment Variables ---
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# --- Python Virtual Environments & Distributions ---
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+
+# --- Python Bytecode & Runtime Caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Testing, Linting & Coverage Artifacts ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+
+# --- Jupyter Notebook Checkpoints ---
+.ipynb_checkpoints/
+
+# --- Local Data Directories (Scoped; Avoids Global *.csv / *.json Ignore) ---
+_local_data/
+data/raw/
+data/interim/
+data/processed/
+
+# --- Local Databases & SQLite Artifacts ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Application & System Logs ---
+*.log
+logs/
+
+# --- Operating System Artifacts ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE & Editor Settings (Shareable Configs Whitelisted) ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+
