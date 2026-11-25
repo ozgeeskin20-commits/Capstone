@@ -203,3 +203,15 @@ Record sessions chronologically. Include scope, changed files, checks and result
   - Added regression tests in `test_metrics.py`, `test_validator.py`, and `test_app_regression.py`.
   - Test suite expanded to 78 passing tests (`pytest -q -p no:cacheprovider` -> 78 passed in 8.92s).
   - `git diff --check` clean. Working tree remains uncommitted on `develop`. Review archive refreshed (23 files).
+
+
+## 2026-11-25 — Dated archive and repository-served dashboard
+
+- Scope: establish a shared dated observation series and remove the dashboard's live call on cold start. Two decisions were proposed, approved by the project owner and implemented on `develop`.
+- Problem: collected snapshots remained in `_local_data/`, which `.gitignore` excludes, so no shared dated history accumulated and [REQ-013](REQUIREMENTS.md) could not be satisfied. The gap is not recoverable retrospectively.
+- Decisions: [ADR-001](../architecture/decisions/ADR-001-dated-archive-in-repository.md) records the dated archive and scheduled collection; [ADR-002](../architecture/decisions/ADR-002-dashboard-reads-repository-snapshot.md) records serving the dashboard from the committed snapshot. Both are Accepted.
+- Added: `src/archive/__init__.py`, `src/archive/daily_archive.py`, `src/archive/repo_snapshot.py`, `tests/test_daily_archive.py`, `tests/test_repo_snapshot.py`, `.github/workflows/daily-archive.yml`, and the committed directories `data/archive/` and `data/current/`.
+- Changed: `src/auto_collector.py` gained a repository-snapshot step and a shared fallback helper; `app.py` gained a source label for it. The collector, the storage adapters and the dated archive were not modified.
+- Checks: the full test suite passed, including 18 new tests. The scheduled workflow ran successfully and committed the first archive record, confirming that GitHub runners can reach the endpoint; the fallback in ADR-001 was not required. With `_local_data/` removed, the dashboard served the repository snapshot without a live request and reported 17,265 stations, 50,607 sockets and 4,049,167.62 kW, matching a live collection.
+- Measured: daily archive file 62.6 KB; `stations_dim.csv` 3.6 MB; `sockets_latest.csv` 6.58 MB.
+- Open: the dated series begins on 2026-11-25 and establishes no earlier history. The daily delta of `data/current/sockets_latest.csv` is not yet observed and should be re-measured after two weeks. The risks recorded in ADR-001 and ADR-002 are not yet reflected in the [risk register](../risks/RISK_REGISTER.md). Analysis work has not started.
