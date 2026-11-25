@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "snapshot_id": "20261125_114349_613e9f",
+  "timestamp_utc": "2026-11-25T11:43:49.781710+00:00",
+  "snapshot_timestamp": "2026-11-25T11:43:49.781710+00:00",
+  "station_count": 17265,
+  "socket_count": 50607,
+  "row_count": 50607,
+  "filename": "sockets_latest.csv",
+  "source_sha256": "f4c6da18fb8dee075f9b5b9bc49a098e102f264be2c8f02d51119fa8c725d7ef",
+  "columns": [
+    "station_id",
+    "station_name",
+    "operator_name",
+    "operator_license_no",
+    "socket_id",
+    "socket_type",
+    "socket_sub_type",
+    "power_kw"
+  ],
+  "note": "Current observation only; overwritten daily. The dated series is in data/archive/."
+}

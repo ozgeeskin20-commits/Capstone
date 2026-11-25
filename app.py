@@ -259,6 +259,17 @@ if raw_df is None and not is_synthetic and upload_error_msg is None:
                         st.sidebar.warning(f"⚠️ Eski anlık görüntü kullanılıyor ({ts_display})")
                     else:
                         st.sidebar.success(f"✅ Güncel veri: {station_count:,} istasyon ({ts_display})")
+                elif result.source == "repository_snapshot":
+                    active_source_label = f"Depo Anlık Görüntüsü ({ts_display})"
+                    if result.is_stale:
+                        st.sidebar.warning(
+                            f"⚠️ Depodaki anlık görüntü eski ({ts_display}). "
+                            "Günlük toplama işi çalışmamış olabilir."
+                        )
+                    else:
+                        st.sidebar.success(
+                            f"✅ Depodaki güncel veri: {station_count:,} istasyon ({ts_display})"
+                        )
 
                 # Cache in session state
                 st.session_state[_SNAP_KEY] = raw_df

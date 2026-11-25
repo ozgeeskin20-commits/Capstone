@@ -3,6 +3,7 @@ Automatic EPDK Data Acquisition Module.
 
 Provides transparent snapshot management for the dashboard:
 - Checks for existing recent snapshots in local storage.
+- Falls back to the snapshot committed in the repository before calling the endpoint.
 - Automatically runs a collection cycle when data is stale or missing.
 - Prevents duplicate API calls via session-state caching and collector locks.
 - Converts timestamps to Europe/Istanbul for user-facing display.
@@ -24,6 +25,7 @@ from src.collector.validator import CollectorValidator
 from src.collector.storage import LocalStorageAdapter
 from src.collector.collector_service import CollectorService
 from src.data_loader import load_dataset
+from src.archive import repo_snapshot
 
 
 # Default freshness threshold: 24 hours
@@ -115,6 +117,28 @@ def load_snapshot_from_manifest(manifest: Dict[str, Any], data_dir: Path) -> Tup
         return None, f"Veri yükleme hatası: {e}"
 
 
+def _stored_manifest(storage: LocalStorageAdapter) -> Tuple[Optional[Dict[str, Any]], str]:
+    """
+    Returns the best already-stored snapshot without contacting the endpoint.
+
+    The locally collected snapshot wins when one exists, because it is at least
+    as recent as the repository's. Otherwise the snapshot committed to the
+    repository is used. Returns (None, "error") when neither is available.
+    """
+    try:
+        existing = storage.get_latest_manifest()
+    except Exception:
+        existing = None
+    if existing and existing.get("status") == "success":
+        return existing, "existing_snapshot"
+
+    repo_manifest = repo_snapshot.read_manifest()
+    if repo_manifest:
+        return repo_manifest, "repository_snapshot"
+
+    return None, "error"
+
+
 def run_auto_collection(
     data_dir: Optional[Path] = None,
     freshness_hours: float = DEFAULT_FRESHNESS_HOURS,
@@ -123,8 +147,13 @@ def run_auto_collection(
     """
     Automatic data acquisition pipeline:
     1. Check existing manifest for a fresh snapshot.
-    2. If stale or missing (or force_refresh), run a live collection cycle.
-    3. Return the result with manifest metadata.
+    2. Otherwise use the snapshot committed to the repository, if it is fresh.
+    3. If neither is fresh (or force_refresh), run a live collection cycle.
+    4. Return the result with manifest metadata.
+
+    Step 2 exists because a hosted deployment starts with an empty local data
+    directory after every cold start. Without it, each cold start would issue
+    its own request to a third-party endpoint the project does not own.
 
     The caller is responsible for session-state caching to avoid re-runs on Streamlit rerenders.
     """
@@ -151,6 +180,16 @@ def run_auto_collection(
             else:
                 # Existing but stale — will try to refresh
                 pass
+
+        # 1b. Prefer the snapshot committed to the repository over a live call.
+        repo_manifest = repo_snapshot.read_manifest()
+        if repo_manifest and is_snapshot_fresh(repo_manifest, freshness_hours):
+            return AutoCollectionResult(
+                success=True,
+                source="repository_snapshot",
+                manifest=repo_manifest,
+                is_stale=False,
+            )
 
     # 2. Enable collection for this process
     os.environ["EPDK_COLLECTION_ENABLED"] = "true"
@@ -181,15 +220,12 @@ def run_auto_collection(
                 collection_report=report,
             )
         elif status == "skipped":
-            # Another process is collecting — try to use existing data
-            try:
-                existing = storage.get_latest_manifest()
-            except Exception:
-                existing = None
-            if existing and existing.get("status") == "success":
+            # Another process is collecting — use whatever is already stored
+            existing, existing_source = _stored_manifest(storage)
+            if existing:
                 return AutoCollectionResult(
                     success=True,
-                    source="existing_snapshot",
+                    source=existing_source,
                     manifest=existing,
                     is_stale=not is_snapshot_fresh(existing, freshness_hours),
                     collection_report=report,
@@ -201,17 +237,14 @@ def run_auto_collection(
                 collection_report=report,
             )
         else:
-            # Collection failed — try to fall back to existing stale data
-            try:
-                existing = storage.get_latest_manifest()
-            except Exception:
-                existing = None
-            if existing and existing.get("status") == "success":
+            # Collection failed — fall back to whatever is already stored
+            existing, existing_source = _stored_manifest(storage)
+            if existing:
                 return AutoCollectionResult(
                     success=True,
-                    source="existing_snapshot",
+                    source=existing_source,
                     manifest=existing,
-                    is_stale=True,
+                    is_stale=not is_snapshot_fresh(existing, freshness_hours),
                     collection_report=report,
                 )
             error_detail = report.get("details", {}).get("error", "Bilinmeyen hata")
@@ -224,17 +257,14 @@ def run_auto_collection(
             )
 
     except Exception as e:
-        # Network/system error — try existing data
-        try:
-            existing = storage.get_latest_manifest()
-        except Exception:
-            existing = None
-        if existing and existing.get("status") == "success":
+        # Network/system error — use whatever is already stored
+        existing, existing_source = _stored_manifest(storage)
+        if existing:
             return AutoCollectionResult(
                 success=True,
-                source="existing_snapshot",
+                source=existing_source,
                 manifest=existing,
-                is_stale=True,
+                is_stale=not is_snapshot_fresh(existing, freshness_hours),
                 error_message=f"Bağlantı hatası: {e}",
             )
         return AutoCollectionResult(

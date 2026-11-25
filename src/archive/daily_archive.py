@@ -32,6 +32,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import pandas as pd
 
+from src.archive import repo_snapshot
 from src.data_loader import load_dataset
 from src.validator import validate_charging_dataset
 
@@ -308,6 +309,11 @@ def build_archive(data_dir: Optional[Path] = None, now: Optional[datetime] = Non
     totals = update_totals(totals_row)
     paths = write_outputs(facts, dimension, totals, day)
 
+    # The dated series above never changes; this is the single current
+    # observation the dashboard reads instead of calling the endpoint.
+    current = repo_snapshot.write_snapshot(validated, manifest)
+    paths["current"] = str(repo_snapshot.SNAPSHOT_PATH)
+
     new_stations = int((dimension["first_seen"] == day).sum())
     return {
         "status": "success",
@@ -316,6 +322,7 @@ def build_archive(data_dir: Optional[Path] = None, now: Optional[datetime] = Non
         "stations_in_archive": int(len(dimension)),
         "new_station_ids_today": new_stations,
         "totals": totals_row,
+        "current_snapshot": current,
         "paths": paths,
     }
 
@@ -334,6 +341,8 @@ def main() -> int:
     print(f"[Archive] Installed power : {totals['total_power_kw']} kW")
     print(f"[Archive] First seen today: {result['new_station_ids_today']}")
     print(f"[Archive] Daily file      : {result['paths']['daily']}")
+    print(f"[Archive] Current snapshot: {result['paths']['current']} "
+          f"({result['current_snapshot']['row_count']} rows)")
     return 0
 
 

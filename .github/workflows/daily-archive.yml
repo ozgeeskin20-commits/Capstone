@@ -1,8 +1,9 @@
 name: Daily EPDK archive
 
 # Collects one EPDK snapshot per day on GitHub's runners and commits the small
-# derived archive to the repository. The raw snapshot is produced inside the job
-# and is never committed; only data/archive/ is.
+# derived outputs to the repository. The raw snapshot is produced inside the job
+# and is never committed; only data/archive/ (the dated series) and
+# data/current/ (the latest observation the dashboard reads) are.
 #
 # Requires: Settings -> Actions -> General -> Workflow permissions set to
 # "Read and write permissions", otherwise the commit step fails with 403.
@@ -55,7 +56,7 @@ jobs:
         run: |
           git config user.name "epdk-archive-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/archive
+          git add data/archive data/current
           if git diff --staged --quiet; then
             echo "No archive change for today."
             exit 0

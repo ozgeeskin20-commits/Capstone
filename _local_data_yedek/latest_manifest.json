@@ -1,0 +1,13 @@
+{
+  "snapshot_id": "20261125_114349_613e9f",
+  "timestamp_utc": "2026-11-25T11:43:49.781710+00:00",
+  "snapshot_timestamp": "2026-11-25T11:43:49.781710+00:00",
+  "filename": "epdk_raw_20261125_114349_613e9f.json.gz",
+  "sha256_hash": "f4c6da18fb8dee075f9b5b9bc49a098e102f264be2c8f02d51119fa8c725d7ef",
+  "raw_byte_size": 16245092,
+  "compressed_byte_size": 1385942,
+  "station_count": 17265,
+  "socket_count": 50607,
+  "storage_path": "C:\\Users\\Furkan\\Capstone\\_local_data\\epdk_raw_20261125_114349_613e9f.json.gz",
+  "status": "success"
+}
