@@ -36,6 +36,7 @@ htmlcov/
 
 # --- Local Data Directories (Scoped; Avoids Global *.csv / *.json Ignore) ---
 _local_data/
+Google Colab Kodlar/
 data/raw/
 data/interim/
 data/processed/
