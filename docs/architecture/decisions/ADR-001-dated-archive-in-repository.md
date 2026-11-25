@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date accepted:** 2026-11-25
--  **Approval evidence:** Approved by <Furkan Alim> on 2026-11-25 via <CAPSTONE WP grubu / toplantı>.
+- - **Approval evidence:** Approved by Özge Eskin on 2026-11-25 in the team WhatsApp group.
 - **Decision owner:** Furkan Alım
 - **Related requirements:** REQ-001, REQ-003, REQ-005, REQ-010, REQ-013
 - **Related ADRs:** None identified.
