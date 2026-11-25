@@ -1,0 +1,65 @@
+name: Daily EPDK archive
+
+# Collects one EPDK snapshot per day on GitHub's runners and commits the small
+# derived archive to the repository. The raw snapshot is produced inside the job
+# and is never committed; only data/archive/ is.
+#
+# Requires: Settings -> Actions -> General -> Workflow permissions set to
+# "Read and write permissions", otherwise the commit step fails with 403.
+
+on:
+  schedule:
+    # 08:40 UTC is 11:40 in Europe/Istanbul. GitHub may delay scheduled runs by
+    # a few minutes under load; an off-the-hour minute reduces that delay.
+    - cron: "40 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Collect EPDK snapshot
+        env:
+          EPDK_COLLECTION_ENABLED: "true"
+          STORAGE_BACKEND: local
+          MIN_STATIONS_THRESHOLD: "15000"
+        run: python -m src.collector.run_collector
+
+      - name: Build daily archive
+        run: python -m src.archive.daily_archive
+
+      - name: Commit archive
+        run: |
+          git config user.name "epdk-archive-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/archive
+          if git diff --staged --quiet; then
+            echo "No archive change for today."
+            exit 0
+          fi
+          git commit -m "data: archive snapshot for $(TZ=Europe/Istanbul date +%Y-%m-%d)"
+          git pull --rebase origin develop
+          git push origin HEAD:develop
