@@ -80,7 +80,7 @@ def test_app_server_startup(tmp_path):
     env = os.environ.copy()
     env["HOME"] = str(tmp_path)
     env["USERPROFILE"] = str(tmp_path)
-    
+
     st_dir = tmp_path / ".streamlit"
     st_dir.mkdir(parents=True, exist_ok=True)
     (st_dir / "credentials.toml").write_text('[general]\nemail = ""\n', encoding="utf-8")
@@ -99,7 +99,7 @@ def test_app_server_startup(tmp_path):
         "--server.port",
         "8504",
     ]
-    
+
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env, text=True)
     try:
         time.sleep(3.5)
@@ -143,7 +143,7 @@ def test_dashboard_production_execution_and_metrics(small_synthetic_app_fixture)
     )
     assert is_socket_active_default is False
     assert label_default == "Kayıtlı Tüm İstasyonlar"
-    
+
     kpis_default = compute_kpis(filtered_default)
     # MUST show all 3 stations
     assert kpis_default["unique_stations"] == 3
@@ -162,7 +162,7 @@ def test_dashboard_production_execution_and_metrics(small_synthetic_app_fixture)
     )
     assert is_socket_active_custom is True
     assert label_custom == "Soket Kriterine Uyan İstasyonlar"
-    
+
     kpis_custom = compute_kpis(filtered_custom)
     # STN-001 (180 kW) and STN-002 (120 kW) match; STN-EMPTY is excluded
     assert kpis_custom["unique_stations"] == 2
@@ -178,7 +178,7 @@ def test_dashboard_empty_operator_selection_execution(small_synthetic_app_fixtur
     Tests that clearing operator selection produces an empty DataFrame (0 rows).
     """
     validated_df, _ = validate_charging_dataset(small_synthetic_app_fixture)
-    
+
     filtered_df, _, _ = filter_dataset(
         validated_df=validated_df,
         filter_all_ops=False,
@@ -258,4 +258,3 @@ def test_app_compilation_syntax():
     # Compiles app.py and raises py_compile.PyCompileError on syntax/indentation failure
     compiled_path = py_compile.compile(str(app_path), doraise=True)
     assert compiled_path is not None
-

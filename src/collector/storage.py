@@ -216,7 +216,7 @@ class S3StorageAdapter(StorageAdapter):
         self.secret_access_key = secret_access_key or os.getenv("S3_SECRET_ACCESS_KEY")
         self.region_name = region_name or os.getenv("S3_REGION_NAME", "auto")
         self.prefix = (prefix or os.getenv("S3_PREFIX", "epdk/")).rstrip("/") + "/"
-        
+
         self._injected_client = client
         self._client = None
 
@@ -225,13 +225,13 @@ class S3StorageAdapter(StorageAdapter):
             return self._injected_client
         if self._client is not None:
             return self._client
-            
+
         if not (self.bucket_name and self.access_key_id and self.secret_access_key):
             raise ValueError(
                 "S3 configuration is missing. Required environment variables: "
                 "S3_BUCKET_NAME, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY"
             )
-            
+
         try:
             import boto3
             client_kwargs = {
@@ -323,7 +323,7 @@ class S3StorageAdapter(StorageAdapter):
         etag = raw_etag.strip('"') if raw_etag else None
         body_stream = resp.get("Body")
         body_bytes = body_stream.read() if hasattr(body_stream, "read") else body_stream
-        
+
         try:
             parsed = json.loads(body_bytes.decode("utf-8"))
             if not isinstance(parsed, dict):

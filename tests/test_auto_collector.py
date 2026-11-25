@@ -116,4 +116,3 @@ def test_auto_collection_falls_back_to_stale_when_collection_fails(tmp_path, mon
     assert result.source == "existing_snapshot"
     assert result.is_stale is True
     assert result.manifest["snapshot_id"] == "test_stale_123"
-

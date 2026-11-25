@@ -428,7 +428,7 @@ class StatefulFakeS3Client:
         self.call_history.append({"action": "get_object", "Bucket": Bucket, "Key": Key})
         if Key not in self.objects:
             raise FakeClientError("NoSuchKey", "The specified key does not exist.", 404)
-        
+
         import io
         item = self.objects[Key]
         return {
@@ -1016,6 +1016,3 @@ def test_envelope_rejection_leaves_previous_successful_manifest_unchanged(tmp_pa
     assert manifest_after == manifest_before
     assert manifest_after["snapshot_id"] == manifest_before["snapshot_id"]
     assert manifest_after["sha256_hash"] == manifest_before["sha256_hash"]
-
-
-

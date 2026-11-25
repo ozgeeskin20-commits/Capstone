@@ -527,7 +527,7 @@ else:
 
     with tab1:
         g_col1, g_col2 = st.columns([1, 2])
-        
+
         with g_col1:
             st.subheader("AC / DC Soket Dağılımı")
             ac_dc_df = get_ac_dc_distribution(filtered_df)
@@ -572,7 +572,7 @@ else:
 
     with tab2:
         p_col1, p_col2 = st.columns(2)
-        
+
         with p_col1:
             st.subheader("Gözlemlenen Soket Güçleri Dağılımı (kW*)")
             power_dist = get_observed_power_distribution(filtered_df)
@@ -593,7 +593,7 @@ else:
                 st.plotly_chart(fig_p, use_container_width=True)
             else:
                 st.info("Güç dağılımı verisi bulunamadı.")
-                
+
         with p_col2:
             st.subheader("Operatör Kurulu Soket Güçleri (Toplam kW*)")
             op_power = get_operator_power_ranking(filtered_df, top_n=12)

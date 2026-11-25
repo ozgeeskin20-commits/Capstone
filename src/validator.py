@@ -56,7 +56,7 @@ def normalize_ac_dc(val: Any) -> Tuple[Optional[str], bool]:
     """
     if pd.isna(val) or val is None:
         return None, False
-    
+
     s = str(val).strip().upper()
     s_clean = s.replace("İ", "I").replace("Ğ", "G").replace("Ü", "U").replace("Ş", "S").replace("Ö", "O").replace("Ç", "C")
     if s_clean in ("AC", "ALTERNATING_CURRENT", "ALTERNATIF AKIM", "ALTERNATIF") or s in ("AC", "ALTERNATING_CURRENT", "ALTERNATİF AKIM", "ALTERNATIF"):
@@ -75,7 +75,7 @@ def normalize_power(val: Any) -> Tuple[Optional[float], bool]:
     """
     if pd.isna(val) or val is None:
         return None, False
-    
+
     try:
         # Handle string formats e.g. "22 kW", "22,5"
         if isinstance(val, str):
@@ -84,7 +84,7 @@ def normalize_power(val: Any) -> Tuple[Optional[float], bool]:
             num = float(clean_str)
         else:
             num = float(val)
-        
+
         if np.isnan(num) or np.isinf(num) or num <= 0:
             return None, False
         return num, True
@@ -95,14 +95,14 @@ def normalize_power(val: Any) -> Tuple[Optional[float], bool]:
 def validate_charging_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, ValidationSummary]:
     """
     Validates and annotates the normalized dataset using high-performance vectorization.
-    
+
     Expects standardized column names:
       - station_id: Identifier of the physical charging station/location
       - socket_id: Identifier of the individual charging socket/connector
       - operator_name: Name of the licensed charging network operator
       - socket_type: AC or DC
       - power_kw: Installed socket power rating in kW
-    
+
     Returns:
       - annotated_df: DataFrame with additional columns:
           _is_valid (bool): whether the record passed critical validation
@@ -111,7 +111,7 @@ def validate_charging_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Validatio
     """
     n_rows = len(df)
     summary = ValidationSummary(total_records=n_rows)
-    
+
     if df.empty:
         summary.issues.append("Veri kümesi boş (0 satır).")
         return df.copy(), summary
@@ -195,7 +195,7 @@ def validate_charging_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Validatio
             (is_norm_dc & is_sub_ac) | (is_norm_ac & is_sub_dc)
         )
         summary.conflicting_ac_dc_count = int(conflict_mask.sum())
-        
+
         # Crucial: Centrally assign conflicting sockets to 'Çelişkili' instead of arbitrarily forcing DC or AC
         norm_types_series[conflict_mask] = "Çelişkili"
 
@@ -214,7 +214,7 @@ def validate_charging_dataset(df: pd.DataFrame) -> Tuple[pd.DataFrame, Validatio
 
     # 9. Build error messages efficiently via flatnonzero on boolean masks
     errors_list: List[List[str]] = [[] for _ in range(n_rows)]
-    
+
     # Pre-extract column arrays to avoid .iloc overhead in error formatting
     socket_id_arr = df_validated["socket_id"].to_numpy()
     socket_type_arr = df_validated["socket_type"].to_numpy()

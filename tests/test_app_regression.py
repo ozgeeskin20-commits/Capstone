@@ -31,22 +31,22 @@ def test_defect_1_power_filter_preserves_socketless_stations_by_default():
         {"station_id": "STN-2", "socket_id": "SCK-2", "operator_name": "Op A", "socket_type": "DC", "power_kw": 120.0},
         {"station_id": "STN-EMPTY", "socket_id": None, "operator_name": "Op B", "socket_type": None, "power_kw": None},
     ])
-    
+
     validated_df, summary = validate_charging_dataset(df)
     assert summary.unique_stations == 3
     assert summary.stations_without_sockets == 1
-    
+
     # Simulate default filter state in app.py
     valid_powers = validated_df["power_kw_normalized"].dropna()
     min_power = float(valid_powers.min())
     max_power = float(valid_powers.max())
     power_range = (min_power, max_power)
     selected_type = "Tümü"
-    
+
     is_type_filter_active = (selected_type != "Tümü")
     is_power_filter_active = not valid_powers.empty and (power_range[0] > min_power or power_range[1] < max_power)
     is_socket_filter_active = is_type_filter_active or is_power_filter_active
-    
+
     filtered_df = validated_df.copy()
     if is_type_filter_active:
         filtered_df = filtered_df[filtered_df["socket_type_normalized"] == selected_type]
@@ -56,7 +56,7 @@ def test_defect_1_power_filter_preserves_socketless_stations_by_default():
             (filtered_df["power_kw_normalized"] >= power_range[0]) &
             (filtered_df["power_kw_normalized"] <= power_range[1])
         ]
-        
+
     kpis = compute_kpis(filtered_df)
     # MUST preserve all 3 stations in default view!
     assert kpis["unique_stations"] == 3
@@ -86,7 +86,7 @@ def test_defect_2_ac_dc_distribution_excludes_socketless_station_placeholders():
         {"station_id": "STN-1", "socket_id": "SCK-1", "operator_name": "Op A", "socket_type_normalized": "AC", "power_kw_normalized": 22.0},
         {"station_id": "STN-2", "socket_id": None, "operator_name": "Op B", "socket_type_normalized": None, "power_kw_normalized": None},
     ])
-    
+
     dist = get_ac_dc_distribution(df)
     assert dist["Soket Sayısı"].sum() == 1
     assert "Bilinmiyor" not in dist["Tip"].values
@@ -100,17 +100,17 @@ def test_defect_3_clearing_operator_selection_produces_empty_result():
         {"station_id": "STN-1", "socket_id": "SCK-1", "operator_name": "ZES", "socket_type_normalized": "AC", "power_kw_normalized": 22.0},
         {"station_id": "STN-2", "socket_id": "SCK-2", "operator_name": "Trugo", "socket_type_normalized": "DC", "power_kw_normalized": 180.0},
     ])
-    
+
     filter_all_ops = False
     selected_operators = []  # User cleared selection
-    
+
     filtered_df = df.copy()
     if not filter_all_ops:
         if not selected_operators:
             filtered_df = filtered_df.iloc[0:0]
         else:
             filtered_df = filtered_df[filtered_df["operator_name"].isin(selected_operators)]
-            
+
     assert len(filtered_df) == 0
     kpis = compute_kpis(filtered_df)
     assert kpis["unique_stations"] == 0
@@ -128,7 +128,7 @@ def test_defect_4_validation_with_non_range_index():
         ],
         index=[100, 200]
     )
-    
+
     annotated, summary = validate_charging_dataset(df)
     assert len(annotated) == 2
     assert summary.unique_stations == 2
@@ -144,15 +144,15 @@ def test_defect_5_failed_upload_does_not_fallback_to_stale_data():
     # Simulate a corrupted uploaded file
     corrupted_stream = io.BytesIO(b"NOT A VALID JSON OR CSV {corrupt")
     corrupted_stream.name = "broken_file.json"
-    
+
     raw_df = generate_synthetic_fixture(5)  # Previous data in memory
-    
+
     # App logic on upload
     try:
         raw_df, _ = load_dataset(corrupted_stream, filename_hint="broken_file.json")
     except Exception:
         raw_df = None  # Crucial fix: cleared on failure
-        
+
     assert raw_df is None
 
 
@@ -163,7 +163,7 @@ def test_snapshot_change_cache_invalidation():
     - When snapshot changes, cache key changes, ensuring stale validation results are never reused.
     """
     VALIDATION_VERSION = "v1.2.2"
-    
+
     snap1_meta = {"snapshot_id": "snap_20261030_082729", "sha256_hash": "hash_aaa"}
     snap2_meta = {"snapshot_id": "snap_20261124_112635", "sha256_hash": "hash_bbb"}
 
@@ -174,5 +174,3 @@ def test_snapshot_change_cache_invalidation():
     assert "snap_20261030_082729" in key1
     assert "snap_20261124_112635" in key2
     assert VALIDATION_VERSION in key1
-
-

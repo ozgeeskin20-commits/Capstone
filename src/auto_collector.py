@@ -242,4 +242,3 @@ def run_auto_collection(
             source="error",
             error_message=f"EPDK API bağlantı hatası: {e}",
         )
-

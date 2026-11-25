@@ -79,10 +79,10 @@ def normalize_schema(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
     """
     normalized_df = df.copy()
     col_mapping: Dict[str, str] = {}
-    
+
     # Lowercase string lookup
     lower_to_orig = {str(c).strip().lower(): c for c in df.columns}
-    
+
     for canonical, aliases in COLUMN_ALIASES.items():
         if canonical in normalized_df.columns:
             continue
@@ -97,7 +97,7 @@ def normalize_schema(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
 
     if col_mapping:
         normalized_df = normalized_df.rename(columns=col_mapping)
-    
+
     # Ensure IDs are string representations if present
     if "station_id" in normalized_df.columns:
         normalized_df["station_id"] = normalized_df["station_id"].astype(str)
@@ -106,7 +106,7 @@ def normalize_schema(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[str, str]]:
         normalized_df["socket_id"] = normalized_df["socket_id"].apply(
             lambda x: None if pd.isna(x) or str(x).lower() in ("none", "nan") else str(x)
         )
-    
+
     return normalized_df, col_mapping
 
 
@@ -114,9 +114,9 @@ def load_from_csv(file_or_path: Union[str, Path, io.BytesIO], **kwargs) -> pd.Da
     """Loads dataset from CSV with automatic delimiter and encoding fallbacks."""
     delimiters = [",", ";", "\t"]
     encodings = ["utf-8", "utf-8-sig", "iso-8859-9", "cp1254", "latin1"]
-    
+
     last_err: Optional[Exception] = None
-    
+
     for enc in encodings:
         for sep in delimiters:
             try:
@@ -125,13 +125,13 @@ def load_from_csv(file_or_path: Union[str, Path, io.BytesIO], **kwargs) -> pd.Da
                 else:
                     file_or_path.seek(0)
                     df = pd.read_csv(file_or_path, sep=sep, encoding=enc, dtype=str, **kwargs)
-                
+
                 if df.shape[1] > 1:
                     return df
             except Exception as e:
                 last_err = e
                 continue
-                
+
     if last_err:
         raise ValueError(f"CSV okuma başarısız oldu: {last_err}")
     return pd.DataFrame()
@@ -180,7 +180,7 @@ def load_from_json(file_or_path: Union[str, Path, io.BytesIO]) -> pd.DataFrame:
     for item in items:
         if not isinstance(item, dict):
             continue
-        
+
         sock_key = next((k for k in ["soketler", "sockets", "connectors"] if k in item), None)
         if sock_key:
             station_base = {k: v for k, v in item.items() if k != sock_key}
@@ -213,10 +213,10 @@ def load_from_zip(file_or_path: Union[str, Path, io.BytesIO]) -> Tuple[pd.DataFr
     3. Look for attempt_log.jsonl to extract snapshot timestamp metadata.
     """
     metadata: Dict[str, Any] = {}
-    
+
     with zipfile.ZipFile(file_or_path, "r") as z:
         names = z.namelist()
-        
+
         # Check attempt_log.jsonl for snapshot metadata
         log_name = next((n for n in names if n.endswith("attempt_log.jsonl")), None)
         if log_name:
@@ -241,16 +241,16 @@ def load_from_zip(file_or_path: Union[str, Path, io.BytesIO]) -> Tuple[pd.DataFr
                 df = load_from_json(io.BytesIO(jf.read()))
                 metadata["source_file"] = raw_json_name
                 return df, metadata
-        
+
         # 2. Check for istasyonlar and soketler CSV pair
         st_name = next((n for n in names if "istasyonlar_" in n and n.endswith(".csv") and "konumlu" not in n), None)
         so_name = next((n for n in names if "soketler_" in n and n.endswith(".csv")), None)
-        
+
         if st_name and so_name:
             with z.open(st_name) as sf, z.open(so_name) as of:
                 st_df = load_from_csv(io.BytesIO(sf.read()))
                 so_df = load_from_csv(io.BytesIO(of.read()))
-                
+
                 # Join on _row_id
                 if "_row_id" in st_df.columns and "_row_id" in so_df.columns:
                     # outer join preserves stations without sockets
@@ -270,7 +270,7 @@ def load_from_zip(file_or_path: Union[str, Path, io.BytesIO]) -> Tuple[pd.DataFr
                 with z.open(n) as jf:
                     metadata["source_file"] = n
                     return load_from_json(io.BytesIO(jf.read())), metadata
-                    
+
     raise ValueError("ZIP arşivi içinde geçerli bir EPDK veri seti bulunamadı.")
 
 
@@ -282,7 +282,7 @@ def load_dataset(file_or_path: Union[str, Path, io.BytesIO], filename_hint: Opti
     """
     name = str(filename_hint or file_or_path).lower()
     metadata: Dict[str, Any] = {}
-    
+
     if name.endswith(".zip"):
         raw_df, metadata = load_from_zip(file_or_path)
     elif name.endswith(".json") or name.endswith(".json.gz") or name.endswith(".gz"):
@@ -420,7 +420,7 @@ def load_dataset(file_or_path: Union[str, Path, io.BytesIO], filename_hint: Opti
                 metadata["source_file"] = p.name
         else:
             raw_df = load_from_csv(file_or_path)
-        
+
     normalized_df, applied_mappings = normalize_schema(raw_df)
     normalized_df.attrs["metadata"] = metadata
     return normalized_df, applied_mappings
@@ -433,22 +433,22 @@ def generate_synthetic_fixture(num_records: int = 100, seed: int = 42) -> pd.Dat
     """
     import random
     random.seed(seed)
-    
+
     operators = ["E-Şarj A.Ş.", "ZES Dijital", "Voltrun", "Trugo Akıllı Şarj", "SharzNet", "Astor Şarj"]
     types = ["AC", "DC"]
     powers_ac = [11.0, 22.0]
     powers_dc = [60.0, 120.0, 150.0, 180.0, 300.0]
-    
+
     records = []
     station_count = max(1, num_records // 3)
     stations = [f"STN-{1000 + i}" for i in range(station_count)]
-    
+
     for i in range(num_records):
         stn = random.choice(stations)
         op = random.choice(operators)
         stype = random.choice(types)
         power = random.choice(powers_ac) if stype == "AC" else random.choice(powers_dc)
-        
+
         records.append({
             "station_id": stn,
             "socket_id": f"SCK-{20000 + i}",
@@ -457,7 +457,7 @@ def generate_synthetic_fixture(num_records: int = 100, seed: int = 42) -> pd.Dat
             "power_kw": power,
             "snapshot_date": "2026-11-05"
         })
-        
+
     df = pd.DataFrame(records)
     df.attrs["metadata"] = {"is_synthetic": True}
     return df

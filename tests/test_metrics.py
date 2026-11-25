@@ -49,7 +49,7 @@ def sample_dataframe():
 
 def test_compute_kpis_normal(sample_dataframe):
     kpis = compute_kpis(sample_dataframe)
-    
+
     assert kpis["unique_stations"] == 3
     assert kpis["unique_sockets"] == 3
     assert kpis["ac_socket_count"] == 1
@@ -63,7 +63,7 @@ def test_compute_kpis_normal(sample_dataframe):
 def test_compute_kpis_empty():
     empty_df = pd.DataFrame()
     kpis = compute_kpis(empty_df)
-    
+
     assert kpis["unique_stations"] == 0
     assert kpis["unique_sockets"] == 0
     assert kpis["total_socket_power_kw"] == 0.0
@@ -76,7 +76,7 @@ def test_compute_kpis_missing_sockets():
         {"station_id": "STN-2", "operator_name": "Trugo"}
     ])
     kpis = compute_kpis(df)
-    
+
     assert kpis["unique_stations"] == 2
     assert kpis["unique_sockets"] is None
     assert kpis["total_socket_power_kw"] is None
@@ -86,7 +86,7 @@ def test_compute_kpis_missing_sockets():
 
 def test_get_ac_dc_distribution(sample_dataframe):
     dist = get_ac_dc_distribution(sample_dataframe)
-    
+
     assert not dist.empty
     # Must only count the 3 actual sockets, NOT the socketless station
     assert dist["Soket Sayısı"].sum() == 3
@@ -104,19 +104,19 @@ def test_duplicate_socket_records_deduplication():
         {"station_id": "STN-1", "socket_id": "SCK-1", "operator_name": "Op A", "socket_type_normalized": "AC", "power_kw_normalized": 22.0}, # duplicate
         {"station_id": "STN-1", "socket_id": "SCK-2", "operator_name": "Op A", "socket_type_normalized": "DC", "power_kw_normalized": 120.0},
     ])
-    
+
     kpis = compute_kpis(df)
     assert kpis["unique_sockets"] == 2
     assert kpis["ac_socket_count"] == 1
     assert kpis["dc_socket_count"] == 1
     assert kpis["total_socket_power_kw"] == 142.0  # 22 + 120, not 22 + 22 + 120
-    
+
     dist = get_ac_dc_distribution(df)
     assert dist["Soket Sayısı"].sum() == 2
-    
+
     pwr_dist = get_observed_power_distribution(df)
     assert pwr_dist["Soket Sayısı"].sum() == 2
-    
+
     op_pwr = get_operator_power_ranking(df)
     assert op_pwr["Toplam Soket Gücü (kW)"].iloc[0] == 142.0
 
@@ -124,10 +124,10 @@ def test_duplicate_socket_records_deduplication():
 
 def test_get_operator_socket_ranking(sample_dataframe):
     ranking = get_operator_socket_ranking(sample_dataframe, top_n=5)
-    
+
     assert "Soket Sayısı Payı (%)" in ranking.columns
     assert "Pazar Payı (%)" not in ranking.columns  # Ensure old label is not present
-    
+
     zes_row = ranking[ranking["Operatör"] == "ZES"]
     assert zes_row["Soket Sayısı"].iloc[0] == 2
     # 2 out of 3 total sockets = 66.67%
@@ -136,10 +136,10 @@ def test_get_operator_socket_ranking(sample_dataframe):
 
 def test_get_operator_power_ranking(sample_dataframe):
     pwr_ranking = get_operator_power_ranking(sample_dataframe, top_n=5)
-    
+
     assert not pwr_ranking.empty
     assert "Toplam Soket Gücü (kW)" in pwr_ranking.columns
-    
+
     # E-Sarj has 180.5 kW, ZES has 142.0 kW
     top_op = pwr_ranking.iloc[0]
     assert top_op["Operatör"] == "E-Sarj"
@@ -148,7 +148,7 @@ def test_get_operator_power_ranking(sample_dataframe):
 
 def test_get_observed_power_distribution(sample_dataframe):
     dist = get_observed_power_distribution(sample_dataframe)
-    
+
     assert not dist.empty
     assert set(dist["Güç (kW)"]) == {22.0, 120.0, 180.5}
 
@@ -166,12 +166,12 @@ def test_conflicting_duplicates_order_invariance():
         {"station_id": "STN-1", "socket_id": "SCK-X", "operator_name": "Trugo", "socket_type_normalized": "DC", "power_kw_normalized": 180.0},
         {"station_id": "STN-2", "socket_id": "SCK-UNAMBIGUOUS", "operator_name": "Astor", "socket_type_normalized": "DC", "power_kw_normalized": 100.0},
     ])
-    
+
     df_order_b = df_order_a.iloc[::-1].reset_index(drop=True)
 
     kpis_a = compute_kpis(df_order_a)
     kpis_b = compute_kpis(df_order_b)
-    
+
     assert kpis_a["unique_sockets"] == 2
     assert kpis_b["unique_sockets"] == 2
     assert kpis_a["conflicting_power_sockets_excluded"] == 1
@@ -213,7 +213,7 @@ def test_single_row_ac_dc_conflict_reconciliation():
     assert kpis["dc_socket_count"] == 1
     assert kpis["conflicting_type_sockets_count"] == 1
     assert kpis["unknown_type_sockets_count"] == 1
-    
+
     # Strict reconciliation equation holds
     assert kpis["unique_sockets"] == (
         kpis["ac_socket_count"] +
@@ -221,7 +221,7 @@ def test_single_row_ac_dc_conflict_reconciliation():
         kpis["conflicting_type_sockets_count"] +
         kpis["unknown_type_sockets_count"]
     )
-    
+
     # Valid power of type-conflicting socket (50.0) is included: 22 + 120 + 50 + 11 = 203.0
     assert kpis["total_socket_power_kw"] == 203.0
 
@@ -272,6 +272,3 @@ def test_real_snapshot_exact_reconciliation():
         kpis["conflicting_type_sockets_count"] +
         kpis["unknown_type_sockets_count"]
     )
-
-
-

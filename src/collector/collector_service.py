@@ -29,7 +29,7 @@ class CollectorService:
         self.api_client = api_client or EPDKApiClient()
         self.validator = validator or CollectorValidator()
         self.storage = storage or LocalStorageAdapter()
-        
+
         default_lock = Path(__file__).resolve().parent.parent.parent / "_local_data" / ".collector.lock"
         self.lock_file = lock_file_path or default_lock
         self._held_token: Optional[str] = None
@@ -41,7 +41,7 @@ class CollectorService:
         """
         try:
             self.lock_file.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Check for stale lock (> 30 minutes)
             if self.lock_file.exists():
                 try:

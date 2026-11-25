@@ -23,7 +23,7 @@ def _drop_duplicates_safe(df: pd.DataFrame, subset: Optional[List[str]] = None) 
     if subset is not None:
         return df.drop_duplicates(subset=subset)
     hashable_cols = [
-        c for c in df.columns 
+        c for c in df.columns
         if c != "_validation_errors" and not (len(df) > 0 and isinstance(df[c].iloc[0], (list, dict, set)))
     ]
     return df.drop_duplicates(subset=hashable_cols)
@@ -57,7 +57,7 @@ def detect_socket_conflicts(df: pd.DataFrame) -> Dict[str, Set[str]]:
         # Cross-row conflicts (different type labels for the same socket_id)
         type_counts = df_valid.dropna(subset=["socket_type_normalized"]).groupby("socket_id")["socket_type_normalized"].nunique()
         cross_row_conflicts = set(type_counts[type_counts > 1].index)
-        
+
         # Single-row conflicts (explicitly identified as 'Çelişkili')
         single_row_conflicts = set(
             df_valid.loc[df_valid["socket_type_normalized"] == "Çelişkili", "socket_id"].dropna()
@@ -70,10 +70,10 @@ def detect_socket_conflicts(df: pd.DataFrame) -> Dict[str, Set[str]]:
 def compute_kpis(df: pd.DataFrame) -> Dict[str, Any]:
     """
     Computes top-level market KPIs on validated dataset.
-    
+
     Category Reconciliation Rule:
         Total Sockets = AC + DC + Çelişkili + Bilinmeyen
-    
+
     Power Policy:
         Sockets with conflicting type classifications but valid unambiguous numeric power
         ratings ARE included in the overall nameplate power sum, since electric capacity
@@ -134,13 +134,13 @@ def compute_kpis(df: pd.DataFrame) -> Dict[str, Any]:
     if "socket_type_normalized" in df_clean.columns:
         # Create single row per unique socket
         unique_sockets_df = df_clean.drop_duplicates(subset=["socket_id"]).copy()
-        
+
         # Determine classification for each socket
         sck_ids = unique_sockets_df["socket_id"]
         types = unique_sockets_df["socket_type_normalized"].copy()
-        
+
         is_conflicting = sck_ids.isin(conflicting_types) | (types == "Çelişkili")
-        
+
         ac_count = int(((types == "AC") & (~is_conflicting)).sum())
         dc_count = int(((types == "DC") & (~is_conflicting)).sum())
         conflicting_count = int(is_conflicting.sum())
@@ -197,11 +197,11 @@ def get_ac_dc_distribution(df: pd.DataFrame) -> pd.DataFrame:
     types.loc[~types.isin(["AC", "DC", "Çelişkili"])] = "Bilinmiyor"
 
     counts_series = types.value_counts()
-    
+
     # Order: AC, DC, Çelişkili, Bilinmiyor
     desired_order = ["AC", "DC", "Çelişkili", "Bilinmiyor"]
     ordered_labels = [c for c in desired_order if c in counts_series.index]
-    
+
     counts = counts_series.loc[ordered_labels].reset_index()
     counts.columns = ["Tip", "Soket Sayısı"]
 

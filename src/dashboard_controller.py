@@ -25,7 +25,7 @@ def filter_dataset(
     Applies dashboard sidebar filters to validated charging dataset.
     Returns:
       (filtered_df, is_socket_filter_active, station_subtext)
-    
+
     Rules:
     - Empty operator selection (filter_all_ops=False and selected_operators=[]) yields empty DataFrame (0 rows).
     - Default power slider (power_range == (min_power, max_power)) preserves all registered stations,
@@ -111,4 +111,3 @@ def handle_file_upload(file_obj, loader_fn) -> Tuple[Optional[pd.DataFrame], Dic
     except Exception as e:
         # Crucial: Clears DataFrame completely on upload failure
         return None, {}, str(e)
-
