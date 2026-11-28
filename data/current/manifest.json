@@ -1,13 +1,13 @@
 {
   "status": "success",
-  "snapshot_id": "20261127_182715_4f5106",
-  "timestamp_utc": "2026-11-27T18:27:15.819606+00:00",
-  "snapshot_timestamp": "2026-11-27T18:27:15.819606+00:00",
+  "snapshot_id": "20261128_171120_fafb5d",
+  "timestamp_utc": "2026-11-28T17:11:20.751459+00:00",
+  "snapshot_timestamp": "2026-11-28T17:11:20.751459+00:00",
   "station_count": 17278,
   "socket_count": 50642,
   "row_count": 50642,
   "filename": "sockets_latest.csv",
-  "source_sha256": "f2c9bbfbb7e9c0b50000020fd7137008d5f53ecdd8dbc4298687ff278a4bf91d",
+  "source_sha256": "8b8e6111125d3d3f258e784379a924806fc8b775d450f289dc00c814ef51570e",
   "columns": [
     "station_id",
     "station_name",
